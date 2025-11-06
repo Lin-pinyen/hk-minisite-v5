@@ -1,7 +1,7 @@
 import os
 import functions_framework
 import requests
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from google.cloud import secretmanager
 
 # 初始化 Flask 應用程式
@@ -29,19 +29,24 @@ def get_gemini_api_key():
         print(f"存取金鑰時發生錯誤: {e}")
         return None
 
+
 # --- 路由定義 ---
+
 @app.route('/')
-def index():
-    """提供主要的 HTML 網頁。"""
-    return render_template('index.html')
+def root():
+    """將根路徑重定向到第一個表格。"""
+    return redirect(url_for('index', table_id=1))
+
+@app.route('/<int:table_id>')
+def index(table_id):
+    """根據 table_id 提供主要的 HTML 網頁。"""
+    if table_id not in [1, 2, 3]:
+        return "無效的表格 ID", 404
+    return render_template('index.html', table_id=table_id)
 
 @app.route('/generate', methods=['POST'])
 def handle_generate():
-    """
-    作為 Gemini API 的安全代理。
-    前端將請求（prompt 和圖片）傳到這裡，此函式會附上儲存
-    在後端的 API 金鑰，然後將請求轉發給 Google。
-    """
+    """作為 Gemini API 的安全代理。"""
     api_key = get_gemini_api_key()
     if not api_key:
         return jsonify({"error": "伺服器設定錯誤：無法讀取 API 金鑰。"}), 500
@@ -53,7 +58,7 @@ def handle_generate():
 
     # 建立 Gemini API 的請求 URL
     model = "gemini-2.5-flash-image-preview"
-    gemini_api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    gemini_api_url = f"https://generativelaNguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
     try:
         # 將請求轉發給 Gemini API
