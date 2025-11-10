@@ -240,7 +240,7 @@ t                }
 
             } catch (error) {
                 console.error('Error generating image:', error);
-                showMessage(`Generation failed: ${error.message}`, "error");
+                showMessage(`Generation failed: ${error.message}`, "error", 10000);
                 resultPlaceholder.classList.remove('hidden');
             } finally {
                 setLoading(false);
@@ -252,13 +252,13 @@ t                }
             loader.classList.toggle('hidden', !isLoading);
         }
 
-        function showMessage(text, type = 'success') {
-            messageText.textContent = text;
+        function showMessage(text, type = 'success', duration = 3000) {
+            messageText.innerHTML = text; // Use innerHTML to render HTML tags
             messageBox.className = 'fixed top-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg opacity-100 transition-opacity duration-300'; // Reset classes
             messageBox.classList.add(type === 'error' ? 'bg-red-500' : 'bg-blue-500');
             setTimeout(() => {
                 messageBox.classList.replace('opacity-100', 'opacity-0');
-            }, 3000);
+            }, duration);
         }
 
         function fileToBase64(file) {

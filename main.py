@@ -73,11 +73,15 @@ def handle_generate():
         # 將 Gemini API 的原始回應直接回傳給前端
         return jsonify(response.json())
 
+
     except requests.exceptions.RequestException as e:
         # 處理呼叫 Gemini API 時的網路或錯誤回應
         print(f"呼叫 Gemini API 時發生錯誤: {e}")
-        error_json = e.response.json() if e.response else {"error": str(e)}
-        return jsonify(error_json), getattr(e.response, 'status_code', 502)
+        status_code = getattr(e.response, 'status_code', 502)
+
+        error_message_html = 'Due to high traffic, the server is temporarily unavailable, please try later. <br>Please also follow our generation guidance <a href="https://policies.google.com/terms/generative-ai/use-policy?hl=en" target="_blank" class="underline text-white">here</a> to avoid failure.'
+
+        return jsonify({"error": {"message": error_message_html}}), status_code
 
 # --- Cloud Function 進入點 ---
 @functions_framework.http
