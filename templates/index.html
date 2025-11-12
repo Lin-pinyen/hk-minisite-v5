@@ -51,9 +51,8 @@
                                 <p class="text-xs text-gray-500" id="file-name">PNG, JPG up to 10MB</p>
                             </div>
                         </div>
-
-                        </div>
                     </div>
+
                     <div class="space-y-2">
                         <label for="profession-select" class="block text-sm font-medium text-gray-700 mb-1">Choose a profession:</label>
                         <select id="profession-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
@@ -73,7 +72,8 @@
                         <textarea id="prompt" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., A cat on the moon, pop art style"></textarea>
                     </div>
                     <button id="generate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400">
-
+                        Generate Image
+                    </button>
                     <p class="text-xs text-gray-500 mt-2 text-left">If you encounter generation failure - it might due to high traffic, please try again later. <br>Please also ensure you follow our generation guidance <a href="https://policies.google.com/terms/generative-ai/use-policy?hl=en" class="text-indigo-600 hover:underline">here</a> to avoid failure.</p>
                 </div>
 
@@ -82,7 +82,7 @@
                     <h3 class="text-lg font-semibold text-gray-800">Preview & Result</h3>
                     <div id="image-preview-container" class="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                         <span class="text-gray-500">Image Preview</span>
-                    </div>
+
                     <div id="result-container" class="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative">
                          <div id="loader" class="loader hidden"></div>
                         <img id="result-image" src="" alt="Generated Image" class="hidden w-full h-full object-contain">
