@@ -67,10 +67,10 @@
                             <option value="Farmer">Farmer</option>
                         </select>
                     </div>
-                    <div>
+                    <!-- <div>
                         <label for="prompt" class="block text-sm font-medium text-gray-700 mb-1">Prompt</label>
                         <textarea id="prompt" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., A cat on the moon, pop art style"></textarea>
-                    </div>
+                    </div> -->
                     <button id="generate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400">
                         Generate Image
                     </button>
@@ -134,14 +134,14 @@
 
         // --- Prompts ---
         const prompts = {
-            "Pilot": "The **subject**, a gender-neutral commercial pilot in full uniform, communicating with Air Traffic Control through their headset, right hand firmly on the thrust levers in a wide-body jet cockpit. They are focused on the runway ahead, as sunlight streams into the cockpit. The primary flight display shows pre-takeoff data.",
-            "Cook": "A close-up, warm-toned photograph of the subject in a plain white chef's jacket, intensely focused on plating a gourmet dish. Their hand expertly places a delicate garnish with tweezers onto a beautifully arranged plate. The background is bustling, high-end kitchen. The expression is one of passion and precision.",
-            "K-pop star":"An energetic, concert-quality photo of the **subject**, a K-pop star, mid-choreography on a large stage. They are holding a microphone and making strong eye contact with the audience. Vivid stage lighting and a sea of glowing light sticks in the background.",
-            "Bartender":"A cinematic, low-light shot of the **subject**, a mixologist, vigorously shaking a cocktail shaker behind a busy, well-stocked bar. Their focus is on the precise movement and technique. Blurred patrons and glowing liquor bottles form the background.",
-            "Footballer":"A low-angle action shot of the **subject**, a professional football player in a team uniform, sprinting across the pitch. They are powerfully striking the ball toward the goal during a crowded stadium match, showing pure athletic determination.",
-            "Artist": "A dynamic, natural light photograph of the **subject** as a passionate artist, standing before a large, partially completed canvas. They are actively applying paint with a wide brush or palette knife, a splash of paint on their cheek. The studio is filled with natural light from a large window, with various art supplies casually arranged in the background",
-            "F1 Driver":"The **subject** as a professional F1 driver, helmet off, standing next to their car in the pit lane during a race weekend. They are looking directly at the camera with a determined, focused expression. The background shows blurred pit crew activity and the grandstand. Realistic photo.",
-            "Farmer":"A serene, full-body shot of a person gently tending to plants in a beautiful, sun-drenched vegetable garden. They are kneeling, carefully inspecting ripe red strawberries or adjusting young vegetable sprouts. Soft, golden light illuminates the scene, highlighting lush green foliage, vibrant produce, and rich soil."
+            "Pilot": "The person in the uploaded photo is a commercial pilot in full uniform, communicating with Air Traffic Control through their headset, right hand firmly on the thrust levers in a wide-body jet cockpit. They are focused out of the window on the runway ahead, as sunlight streams into the cockpit. The primary flight display shows pre-takeoff data. The image should be based on the facial features and likeness of the uploaded photo.",
+            "Chef": "The person uploaded in the photo is in a close-up, warm-toned photograph, in a plain white chef's jacket, intensely focused on plating a gourmet dish. Their hand expertly places a delicate garnish with tweezers onto a beautifully arranged plate. The background is bustling, high-end kitchen. The expression is one of passion and precision. The image should be based on the facial features and likeness of the uploaded photo.",
+            "K-pop star":"Transform the subject uploaded in the image into a singer performing on stage.  They have no background dancers, and are performing solo on a massive concert stage holding only one mic. The image should be based on the facial features and likeness of the uploaded photo. They are captured mid-performance, striking a powerful pose in the middle of a high energy pop music performance. They are wearing a cutting-edge, high-fashion stage outfit. The generated person should look exactly like the uploaded image. The image style is photorealistic and can be slightly grainy.",
+            "Bartender":"A cinematic, low-light shot of the person in the uploaded photo as a cool, stylish bartender, vigorously shaking a cocktail shaker behind a busy, well-stocked bar. Their focus is on precise movement and technique. Blurred patrons and glowing liquor bottles form the background. The image should be based on the facial features and likeness of the uploaded photo.",
+            "Footballer":"Turn the person in the uploaded image into a professional football player in a team uniform, sprinting across the pitch, shot from a low angle shot. They are powerfully striking the ball toward the goal during a crowded stadium match, showing pure athletic determination. The image should be based on the facial features and likeness of the uploaded photo.",
+            "Artist": "A dynamic, natural light photograph of the person in the uploaded photo as a passionate artist, standing before a large, partially completed canvas. They are actively applying paint with a wide brush or palette knife, a splash of paint on their cheek. The studio is filled with natural light from a large window, with various art supplies casually arranged in the background. The image should be based on the facial features and likeness of the uploaded photo.",
+            "F1 Driver":" The person in the uploaded photo as a professional F1 driver, helmet off, standing next to their car in the pit lane during a race weekend. They are looking directly at the camera with a determined, focused expression. The background shows blurred pit crew activity and the grandstand. Realistic photo. The generated person should look exactly like the image uploaded.",
+            "Farmer":"A serene, full-body shot of the person in the image gently tending to plants in a beautiful, sun-drenched vegetable garden. They are kneeling, carefully inspecting ripe red strawberries or adjusting young vegetable sprouts. Soft, golden light illuminates the scene, highlighting lush green foliage, vibrant produce, and rich soil. This farmer should look exactly like the uploaded image"
         };
 
         // --- Event Listeners ---
