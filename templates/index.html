@@ -116,7 +116,6 @@
         // --- DOM Elements ---
         const imageUploadInput = document.getElementById('image-upload-input');
         const fileNameDisplay = document.getElementById('file-name');
-        const promptInput = document.getElementById('prompt');
         const generateBtn = document.getElementById('generate-btn');
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const resultContainer = document.getElementById('result-container');
@@ -148,15 +147,6 @@
         imageUploadInput.addEventListener('change', handleImageUpload);
         generateBtn.addEventListener('click', handleGenerateImage);
 
-        professionSelect.addEventListener('change', () => {
-            const profession = professionSelect.value;
-            if (prompts[profession]) {
-                promptInput.value = prompts[profession];
-            } else {
-                promptInput.value = ""; // Clear if no profession selected
-            }
-        });
-
         // --- Functions ---
         function handleImageUpload(event) {
             const file = event.target.files[0];
@@ -171,8 +161,15 @@
         }
 
         async function handleGenerateImage() {
-            if (!uploadedFile || !promptInput.value.trim()) {
-                showMessage("Please upload an image and enter a prompt!", "error");
+            const selectedProfession = professionSelect.value;
+            if (!uploadedFile || !selectedProfession) {
+                showMessage("Please upload an image and select a profession!", "error");
+                return;
+            }
+
+            const promptText = prompts[selectedProfession];
+            if (!promptText) {
+                showMessage("Invalid profession selected!", "error");
                 return;
             }
 
@@ -194,7 +191,7 @@
                 const payload = {
                     contents: [{
                         parts: [
-                            { text: promptInput.value },
+                            { text: promptText },
                             { inlineData: { mimeType: uploadedFile.type, data: base64ImageData.split(',')[1] } }
                         ]
                     }]
@@ -237,7 +234,7 @@
                         detailedError = result.error.message;
                     }
                     throw new Error(detailedError);
-t                }
+                }
 
             } catch (error) {
                 console.error('Error generating image:', error);
