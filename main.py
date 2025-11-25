@@ -35,12 +35,12 @@ def get_gemini_api_key():
 @app.route('/')
 def root():
     """將根路徑重定向到第一個表格。"""
-    return redirect(url_for('index', id=1))
+    return redirect(url_for('index', id=4))
 
 @app.route('/<int:id>')
 def index(id):
     """根據 id 提供主要的 HTML 網頁。"""
-    if id not in [1, 2, 3]:
+    if id not in [4, 5, 6]:
         return "Please enter an ID between 1 and 3.", 404
     return render_template('index.html', id=id)
 
