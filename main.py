@@ -92,3 +92,8 @@ def nano_banana_app(request):
     """
     with app.request_context(request.environ):
         return app.full_dispatch_request()
+    
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    # 這裡一定要用 0.0.0.0
+    app.run(debug=True, host="0.0.0.0", port=port)
