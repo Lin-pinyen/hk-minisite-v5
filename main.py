@@ -3,6 +3,9 @@ import functions_framework
 import requests
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from google.cloud import secretmanager
+from PIL import Image, ImageDraw, ImageFont
+import base64
+import io
 
 # 初始化 Flask 應用程式
 app = Flask(__name__)
@@ -29,6 +32,63 @@ def get_gemini_api_key():
         print(f"存取金鑰時發生錯誤: {e}")
         return None
 
+
+# --- Image Overlay Function ---
+def add_overlay(image_data):
+    """在圖片上添加文字和標誌浮水印。"""
+    try:
+        image = Image.open(io.BytesIO(image_data)).convert("RGBA")
+        logo = Image.open("google_icon.png").convert("RGBA")
+
+        # 調整標誌大小
+        logo_width = image.width // 6
+        logo_height = int(logo.height * (logo_width / logo.width))
+        logo = logo.resize((logo_width, logo_height))
+
+        # 建立一個可以繪製的圖像
+        draw = ImageDraw.Draw(image)
+
+        # 設定文字內容和字體
+        text = "HKGCC International Business Summit 2025\nTheme: [Theme Placeholder]\nDate: [Date Placeholder]"
+        try:
+            font = ImageFont.truetype("arial.ttf", size=image.width // 25)
+        except IOError:
+            font = ImageFont.load_default()
+
+        text_color = (255, 255, 255, 255)  # 白色
+
+        # 計算文字位置
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+        text_x = image.width // 20
+        text_y = image.height - text_height - image.height // 10
+
+        # 添加半透明背景到文字後面
+        bg_color = (255, 255, 255, 180)
+        draw.rectangle(
+            [(text_x - 5, text_y - 5),
+             (text_x + text_width + 5, text_y + text_height + 5)],
+            fill=bg_color
+        )
+
+        # 添加文字
+        draw.text((text_x, text_y), text, font=font, fill=text_color)
+
+        # 計算標誌位置 (右下角)
+        logo_x = image.width - logo_width - image.width // 20
+        logo_y = image.height - logo_height - image.height // 10
+
+        # 貼上標誌
+        image.paste(logo, (logo_x, logo_y), logo)
+
+        # 將圖像轉換回字節
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        return img_byte_arr.getvalue()
+    except Exception as e:
+        print(f"添加浮水印時發生錯誤: {e}")
+        return image_data # 如果出錯則回傳原始圖片
 
 # --- 路由定義 ---
 
@@ -70,8 +130,29 @@ def handle_generate():
         response = requests.post(gemini_api_url, json=client_payload, headers={'Content-Type': 'application/json'})
         response.raise_for_status()  # 如果 API 回傳錯誤碼 (4xx or 5xx)，則拋出例外
         
-        # 將 Gemini API 的原始回應直接回傳給前端
-        return jsonify(response.json())
+        api_response = response.json()
+
+        # 提取生成的圖像數據
+        if api_response.get("candidates") and len(api_response["candidates"]) > 0:
+            parts = api_response["candidates"][0].get("content", {}).get("parts", [])
+            image_part = next((p for p in parts if "inlineData" in p), None)
+            
+            if image_part:
+                image_data = base64.b64decode(image_part["inlineData"]["data"])
+                mime_type = image_part["inlineData"]["mimeType"]
+
+                # 添加浮水印
+                modified_image_data = add_overlay(image_data)
+                
+                # 將修改後的圖像轉換回 base64
+                modified_image_base64 = base64.b64encode(modified_image_data).decode('utf-8')
+                
+                # 更新 API 回應中的圖像數據
+                image_part["inlineData"]["data"] = modified_image_base64
+                image_part["inlineData"]["mimeType"] = "image/png" # 因為我們保存為 PNG
+
+        # 將修改後的 Gemini API 回應回傳給前端
+        return jsonify(api_response)
 
 
     except requests.exceptions.RequestException as e:
@@ -95,5 +176,4 @@ def nano_banana_app(request):
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    # 這裡一定要用 0.0.0.0
     app.run(debug=True, host="0.0.0.0", port=port)

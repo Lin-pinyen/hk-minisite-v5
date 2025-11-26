@@ -2,3 +2,4 @@ functions-framework==3.*
 Flask==3.*
 requests==2.*
 google-cloud-secret-manager==2.*
+Pillow==10.*

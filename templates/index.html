@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Banana Playground</title>
+    <title>HKGCC International Business Summit 2025 - Image Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -27,8 +27,8 @@
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-10">
             <header class="text-center mb-8">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-800">Nano Banana Playground</h1>
-                <p class="text-gray-500 mt-2">Upload an image, choose a theme, and create a unique vision!</p>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800">HKGCC International Business Summit 2025</h1>
+                <p class="text-gray-500 mt-2">Upload an image, choose a style, and create a unique vision for the summit!</p>
             </header>
 
             <main class="grid md:grid-cols-2 gap-8">
@@ -54,9 +54,9 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label for="profession-select" class="block text-sm font-medium text-gray-700 mb-1">Choose a profession:</label>
+                        <label for="profession-select" class="block text-sm font-medium text-gray-700 mb-1">Choose a persona:</label>
                         <select id="profession-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                            <option value="">Select a profession</option>
+                            <option value="">Select a persona</option>
                             <option value="Pilot">Pilot</option>
                             <option value="Chef">Chef</option>
                             <option value="K-pop star">K-pop star</option>
@@ -67,10 +67,6 @@
                             <option value="Farmer">Farmer</option>
                         </select>
                     </div>
-                    <!-- <div>
-                        <label for="prompt" class="block text-sm font-medium text-gray-700 mb-1">Prompt</label>
-                        <textarea id="prompt" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., A cat on the moon, pop art style"></textarea>
-                    </div> -->
                     <button id="generate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400">
                         Generate Image
                     </button>
@@ -131,8 +127,27 @@
         // --- State ---
         let uploadedFile = null;
 
+        // --- System Prompt ---
+        const systemPrompt = `Role: You are an expert AI visual artist and copywriter for the "HKGCC International Business Summit 2025". Your goal is to generate professional, futuristic portraits that highlight Hong Kong's role as a shifting economic center of gravity.
+
+Task:
+
+Image Generation: Create a portrait based on the user's input description.
+
+Constraints & Guidelines (IMAGE):
+
+Subject: Center the subject. Use cinematic lighting. The subject should look confident and professional (Business Formal or Futuristic Business attire).
+
+Background (MANDATORY): The background MUST be the iconic Hong Kong skyline at night (Victoria Harbour view), featuring the IFC and ICC towers with neon lights.
+
+Composition: Ensure the subject is framed from the waist up. IMPORTANT: Leave the bottom 20% of the image relatively dark and uncluttered. This creates negative space for a text overlay.
+
+Style: Photorealistic, high definition (4k), slightly cyberpunk/futuristic but corporate-friendly.
+`;
+
         // --- Prompts ---
-        const prompts = {
+
+        const userPrompts = {
             "Pilot": "The person in the uploaded photo is a commercial pilot in full uniform, communicating with Air Traffic Control through their headset, right hand firmly on the thrust levers in a wide-body jet cockpit. They are focused out of the window on the runway ahead, as sunlight streams into the cockpit. The primary flight display shows pre-takeoff data. The image should be based on the facial features and likeness of the uploaded photo.",
             "Chef": "The person uploaded in the photo is in a close-up, warm-toned photograph, in a plain white chef's jacket, intensely focused on plating a gourmet dish. Their hand expertly places a delicate garnish with tweezers onto a beautifully arranged plate. The background is bustling, high-end kitchen. The expression is one of passion and precision. The image should be based on the facial features and likeness of the uploaded photo.",
             "K-pop star":"Transform the subject uploaded in the image into a singer performing on stage.  They have no background dancers, and are performing solo on a massive concert stage holding only one mic. The image should be based on the facial features and likeness of the uploaded photo. They are captured mid-performance, striking a powerful pose in the middle of a high energy pop music performance. They are wearing a cutting-edge, high-fashion stage outfit. The generated person should look exactly like the uploaded image. The image style is photorealistic and can be slightly grainy.",
@@ -163,15 +178,17 @@
         async function handleGenerateImage() {
             const selectedProfession = professionSelect.value;
             if (!uploadedFile || !selectedProfession) {
-                showMessage("Please upload an image and select a profession!", "error");
+                showMessage("Please upload an image and select a persona!", "error");
                 return;
             }
 
-            const promptText = prompts[selectedProfession];
-            if (!promptText) {
-                showMessage("Invalid profession selected!", "error");
+            const userPromptText = userPrompts[selectedProfession];
+            if (!userPromptText) {
+                showMessage("Invalid persona selected!", "error");
                 return;
             }
+
+            const fullPrompt = systemPrompt + "\n" + userPromptText + " The image should be based on the facial features and likeness of the uploaded photo.";
 
             setLoading(true);
             resultImage.classList.add('hidden');
@@ -191,7 +208,7 @@
                 const payload = {
                     contents: [{
                         parts: [
-                            { text: promptText },
+                            { text: fullPrompt },
                             { inlineData: { mimeType: uploadedFile.type, data: base64ImageData.split(',')[1] } }
                         ]
                     }]
@@ -212,6 +229,7 @@
                 console.log("Full API Response from backend:", JSON.stringify(result, null, 2));
 
                 const imagePart = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                const textPart = result?.candidates?.[0]?.content?.parts?.find(p => p.text);
                 
                 if (imagePart) {
                     const generatedImageBase64 = imagePart.inlineData.data;
@@ -225,7 +243,8 @@
                     desktopDownloadTip.classList.add('md:block');
                     // 'hidden' class for mobile stays, so result is 'hidden md:block'
 
-                    showMessage("Image generated successfully!");
+                    let caption = textPart ? textPart.text : "Visionary thoughts loading...";
+                    showMessage(`Image generated successfully! Caption: ${caption}`);
                 } else {
                     let detailedError = "No image data found in the API response.";
                     if (result?.candidates?.[0]?.finishReason === 'SAFETY') {
