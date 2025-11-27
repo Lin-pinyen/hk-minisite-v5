@@ -54,9 +54,9 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label for="profession-select" class="block text-sm font-medium text-gray-700 mb-1">Choose a persona:</label>
+                        <label for="profession-select" class="block text-sm font-medium text-gray-700 mb-1">Choose a profession:</label>
                         <select id="profession-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                            <option value="">Select a persona</option>
+                            <option value="">Select a profession</option>
                             <option value="Pilot">Pilot</option>
                             <option value="Chef">Chef</option>
                             <option value="K-pop star">K-pop star</option>
@@ -220,14 +220,54 @@ Style: Photorealistic, high definition (4k), slightly cyberpunk/futuristic but c
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error?.message || 'An error occurred on the backend server.');
+                // 1. 嘗試解析 JSON，如果後端崩潰回傳 HTML，這裡會抓到錯誤
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    // 如果無法解析 JSON，通常代表後端嚴重崩潰 (回傳了 Nginx/Flask 預設 HTML)
+                    throw new Error(`Backend Critical Failure (Non-JSON response). Status: ${response.status}`);
                 }
-                
-                console.log("Full API Response from backend:", JSON.stringify(result, null, 2));
 
+                // 2. 針對 HTTP 狀態碼進行分類處理 (這是最重要的部分)
+                if (!response.ok) {
+                    const errorMsg = result.error?.message || JSON.stringify(result);
+                    
+                    // 圖片過大 (常見錯誤)
+                    if (response.status === 413) {
+                        throw new Error(`Image is too large (413). Please upload a smaller file.`);
+                    }
+                    // 權限或設定錯誤
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error(`API Key error or Unauthorized (401/403). Check server logs.`);
+                    }
+                    // 後端程式碼報錯 (你在 Python 裡的 Exception)
+                    if (response.status === 500) {
+                        throw new Error(`Server Internal Error (500): ${errorMsg}`);
+                    }
+                    // 上游 API (Gemini) 暫時無法使用
+                    if (response.status === 503) {
+                        throw new Error(`Service Unavailable. Gemini API might be overloaded.`);
+                    }
+
+                    // 其他錯誤
+                    throw new Error(`API Request Failed (${response.status}): ${errorMsg}`);
+                }
+
+                console.log("Full API Response from backend:", JSON.stringify(result, null, 2));
+                // 3. 檢查 Gemini 的業務邏輯錯誤 (成功連線，但沒產圖)
+                // 檢查是否因為 Safety Filter 被擋
+                const finishReason = result?.candidates?.[0]?.finishReason;
+                if (finishReason !== 'STOP' && finishReason !== undefined) {
+                     if (finishReason === 'SAFETY') {
+                         throw new Error(`Blocked by Safety Filter. The AI detected sensitive content in your image or prompt.`);
+                     }
+                     if (finishReason === 'RECITATION') {
+                         throw new Error(`Blocked by Copyright Filter (Recitation).`);
+                     }
+                     // 其他未知的結束原因
+                     console.warn("Unusual finish reason:", finishReason);
+                }
                 const imagePart = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
                 const textPart = result?.candidates?.[0]?.content?.parts?.find(p => p.text);
                 
