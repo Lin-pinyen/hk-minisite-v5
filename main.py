@@ -49,7 +49,7 @@ def add_overlay(image_data):
 
         # 3. 檢查橫幅圖片是否存在
         if not os.path.exists(banner_path):
-            print(f"嚴重錯誤：找不到橫幅檔案！請確認 hk2025.jpeg.png 已上傳。")
+            print(f"嚴重錯誤：找不到橫幅檔案！請確認 hk2025.jpeg 已上傳。")
             return image_data
             
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
@@ -83,15 +83,8 @@ def add_overlay(image_data):
 
 @app.route('/')
 def root():
-    """將根路徑重定向到第一個表格。"""
-    return redirect(url_for('index', id=4))
-
-@app.route('/<int:id>')
-def index(id):
-    """根據 id 提供主要的 HTML 網頁。"""
-    if id not in [4, 5, 6]:
-        return "Please enter an ID between 1 and 3.", 404
-    return render_template('index.html', id=id)
+    """提供主要的 HTML 網頁。"""
+    return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
 def handle_generate():
