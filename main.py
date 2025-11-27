@@ -112,7 +112,7 @@ def handle_generate():
 
     # 建立 Gemini API 的請求 URL
     # model = "gemini-2.5-flash-image-preview"
-    model = "gemini-3-pro-image-preview	"
+    model = "gemini-3-pro-image-preview"
     gemini_api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
     try:
