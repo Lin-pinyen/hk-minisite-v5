@@ -41,7 +41,7 @@ def add_overlay(image_data):
         base_path = os.path.dirname(os.path.abspath(__file__))
         
         # 2. 組合出資源檔案的絕對路徑
-        logo_path = os.path.join(base_path, "google_icon.png")
+        logo_path = os.path.join(base_path, "Google_Icon.png")
         font_path = os.path.join(base_path, "arial.ttf")
         
         # 除錯：印出路徑確認
@@ -79,7 +79,7 @@ def add_overlay(image_data):
         text_y = image.height - text_height - image.height // 10
 
         # 添加半透明背景到文字後面
-        bg_color = (255, 255, 255, 180)
+        bg_color = (0, 0, 0, 100)
         draw.rectangle(
             [(text_x - 5, text_y - 5),
              (text_x + text_width + 5, text_y + text_height + 5)],
