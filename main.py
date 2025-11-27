@@ -42,14 +42,14 @@ def add_overlay(image_data):
         base_path = os.path.dirname(os.path.abspath(__file__))
         
         # 2. 組合出橫幅圖片的絕對路徑
-        banner_path = os.path.join(base_path, "bottom_banner.png")
+        banner_path = os.path.join(base_path, "hk2025.jpeg")
         
         # 除錯：印出路徑確認
         print(f"Banner Path: {banner_path}")
 
         # 3. 檢查橫幅圖片是否存在
         if not os.path.exists(banner_path):
-            print(f"嚴重錯誤：找不到橫幅檔案！請確認 bottom_banner.png 已上傳。")
+            print(f"嚴重錯誤：找不到橫幅檔案！請確認 hk2025.jpeg.png 已上傳。")
             return image_data
             
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
