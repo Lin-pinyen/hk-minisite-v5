@@ -33,72 +33,47 @@ def get_gemini_api_key():
         return None
 
 
+
 # --- Image Overlay Function ---
 def add_overlay(image_data):
-    """在圖片上添加文字和標誌浮水印。"""
+    """在圖片底部添加橫幅浮水印。"""
     try:
         # 1. 獲取當前程式碼檔案 (main.py) 所在的絕對路徑
         base_path = os.path.dirname(os.path.abspath(__file__))
         
-        # 2. 組合出資源檔案的絕對路徑
-        logo_path = os.path.join(base_path, "Google_Icon.png")
-        font_path = os.path.join(base_path, "arial.ttf")
+        # 2. 組合出橫幅圖片的絕對路徑
+        banner_path = os.path.join(base_path, "bottom_banner.png")
         
         # 除錯：印出路徑確認
-        print(f"Logo Path: {logo_path}")
+        print(f"Banner Path: {banner_path}")
 
-        # 3. 檢查 Logo 是否存在 (避免直接崩潰)
-        if not os.path.exists(logo_path):
-            print(f"嚴重錯誤：找不到 Logo 檔案！請確認 google_icon.png 有被上傳。")
+        # 3. 檢查橫幅圖片是否存在
+        if not os.path.exists(banner_path):
+            print(f"嚴重錯誤：找不到橫幅檔案！請確認 bottom_banner.png 已上傳。")
             return image_data
+            
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
-        logo = Image.open(logo_path).convert("RGBA")
+        banner = Image.open(banner_path).convert("RGBA")
 
-        # 調整標誌大小
-        logo_width = image.width // 6
-        logo_height = int(logo.height * (logo_width / logo.width))
-        logo = logo.resize((logo_width, logo_height))
+        # 調整橫幅大小以匹配圖片寬度
+        banner_width = image.width
+        banner_height = int(banner.height * (banner_width / banner.width))
+        banner = banner.resize((banner_width, banner_height))
 
-        # 建立一個可以繪製的圖像
-        draw = ImageDraw.Draw(image)
+        # 計算橫幅位置 (底部)
+        banner_x = 0
+        banner_y = image.height - banner_height
 
-        # 設定文字內容和字體
-        text = "HKGCC International Business Summit 2025\nTheme: [Theme Placeholder]\nDate: [Date Placeholder]"
-        try:
-            font = ImageFont.truetype("arial.ttf", size=image.width // 25)
-        except IOError:
-            font = ImageFont.load_default()
-
-        text_color = (255, 255, 255, 255)  # 白色
-
-        # 計算文字位置
-        text_bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-        text_x = image.width // 20
-        text_y = image.height - text_height - image.height // 10
-
-        # 添加半透明背景到文字後面
-        bg_color = (0, 0, 0, 100)
-        draw.rectangle(
-            [(text_x - 5, text_y - 5),
-             (text_x + text_width + 5, text_y + text_height + 5)],
-            fill=bg_color
-        )
-
-        # 添加文字
-        draw.text((text_x, text_y), text, font=font, fill=text_color)
-
-        # 計算標誌位置 (右下角)
-        logo_x = image.width - logo_width - image.width // 20
-        logo_y = image.height - logo_height - image.height // 10
-
-        # 貼上標誌
-        image.paste(logo, (logo_x, logo_y), logo)
+        # 創建一個新的圖像以避免直接修改原始圖像
+        combined_image = Image.new("RGBA", image.size)
+        combined_image.paste(image, (0, 0))
+        
+        # 貼上橫幅
+        combined_image.paste(banner, (banner_x, banner_y), banner)
 
         # 將圖像轉換回字節
         img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
+        combined_image.save(img_byte_arr, format='PNG')
         return img_byte_arr.getvalue()
     except Exception as e:
         print(f"添加浮水印時發生錯誤: {e}")
