@@ -37,8 +37,22 @@ def get_gemini_api_key():
 def add_overlay(image_data):
     """在圖片上添加文字和標誌浮水印。"""
     try:
+        # 1. 獲取當前程式碼檔案 (main.py) 所在的絕對路徑
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        
+        # 2. 組合出資源檔案的絕對路徑
+        logo_path = os.path.join(base_path, "google_icon.png")
+        font_path = os.path.join(base_path, "arial.ttf")
+        
+        # 除錯：印出路徑確認
+        print(f"Logo Path: {logo_path}")
+
+        # 3. 檢查 Logo 是否存在 (避免直接崩潰)
+        if not os.path.exists(logo_path):
+            print(f"嚴重錯誤：找不到 Logo 檔案！請確認 google_icon.png 有被上傳。")
+            return image_data
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
-        logo = Image.open("google_icon.png").convert("RGBA")
+        logo = Image.open(logo_path).convert("RGBA")
 
         # 調整標誌大小
         logo_width = image.width // 6
