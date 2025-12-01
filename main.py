@@ -62,7 +62,7 @@ def process_image(image_data, overlay_text="Presented by Google"):
         # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
         # 這是你 CLI 找到的確切路徑
         font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-        font_size = 20
+        font_size = 60
         
         try:
             font = ImageFont.truetype(font_path, font_size)
