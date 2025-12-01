@@ -34,50 +34,69 @@ def get_gemini_api_key():
 
 
 
-# --- Image Overlay Function ---
-def add_overlay(image_data):
-    """在圖片底部添加橫幅浮水印。"""
+def process_image(image_data, overlay_text="Presented by Google"):
+    """
+    整合圖片處理：添加底部 Banner 與 右下角文字。
+    使用系統內建的 DejaVuSans-Bold 字體。
+    """
     try:
-        # 1. 獲取當前程式碼檔案 (main.py) 所在的絕對路徑
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        
-        # 2. 組合出橫幅圖片的絕對路徑
-        banner_path = os.path.join(base_path, "hk2025.jpeg")
-        
-        # 除錯：印出路徑確認
-        print(f"Banner Path: {banner_path}")
-
-        # 3. 檢查橫幅圖片是否存在
-        if not os.path.exists(banner_path):
-            print(f"嚴重錯誤：找不到橫幅檔案！請確認 hk2025.jpeg 已上傳。")
-            return image_data
-            
+        # 1. 一次性開啟圖片 (優化 I/O)
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
-        banner = Image.open(banner_path).convert("RGBA")
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
-        # 調整橫幅大小以匹配圖片寬度
-        banner_width = image.width
-        banner_height = int(banner.height * (banner_width / banner.width))
-        banner = banner.resize((banner_width, banner_height))
+        # --- 步驟 A: 貼上底部 Banner ---
+        banner_path = os.path.join(base_path, "hk2025.jpeg")
+        if os.path.exists(banner_path):
+            banner = Image.open(banner_path).convert("RGBA")
+            # 調整橫幅大小以匹配圖片寬度
+            banner_width = image.width
+            banner_height = int(banner.height * (banner_width / banner.width))
+            banner = banner.resize((banner_width, banner_height))
+            
+            # 計算橫幅位置 (底部)
+            banner_y = image.height - banner_height
+            image.paste(banner, (0, banner_y)) # 若 banner 沒有透明度，可省略 mask
+        else:
+            print("警告：找不到 hk2025.jpeg")
 
-        # 計算橫幅位置 (底部)
-        banner_x = 0
-        banner_y = image.height - banner_height
-
-        # 創建一個新的圖像以避免直接修改原始圖像
-        combined_image = Image.new("RGBA", image.size)
-        combined_image.paste(image, (0, 0))
+        # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
+        # 這是你 CLI 找到的確切路徑
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+        font_size = 20
         
-        # 貼上橫幅
-        combined_image.paste(banner, (banner_x, banner_y), banner)
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except IOError:
+            # 萬一 Cloud Functions 的正式環境真的沒有這個檔，會自動降級回預設字體
+            print(f"警告：在路徑 {font_path} 找不到字體，將使用預設字體。")
+            font = ImageFont.load_default()
 
-        # 將圖像轉換回字節
+        draw = ImageDraw.Draw(image)
+        
+        # 計算文字大小
+        bbox = draw.textbbox((0, 0), overlay_text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        # 計算文字位置 (右下角，留 15px 邊距)
+        margin = 15
+        x = image.width - text_width - margin
+        y = image.height - text_height - margin
+
+        # # (選用) 畫一個黑色陰影，讓白字在任何背景都清楚
+        # draw.text((x+1, y+1), overlay_text, font=font, fill=(0, 0, 0)) 
+        
+        # 畫上白色主文字
+        draw.text((x, y), overlay_text, font=font, fill=(255, 255, 255))
+
+        # --- 步驟 C: 輸出結果 ---
         img_byte_arr = io.BytesIO()
-        combined_image.save(img_byte_arr, format='PNG')
+        image.save(img_byte_arr, format='PNG')
         return img_byte_arr.getvalue()
+
     except Exception as e:
-        print(f"添加浮水印時發生錯誤: {e}")
-        return image_data # 如果出錯則回傳原始圖片
+        print(f"圖片處理發生錯誤: {e}")
+        return image_data # 如果出錯，至少回傳原始圖片不要讓程式掛掉
 
 # --- 路由定義 ---
 
@@ -122,17 +141,16 @@ def handle_generate():
             
             if image_part:
                 image_data = base64.b64decode(image_part["inlineData"]["data"])
-                mime_type = image_part["inlineData"]["mimeType"]
-
-                # 添加浮水印
-                modified_image_data = add_overlay(image_data)
                 
-                # 將修改後的圖像轉換回 base64
-                modified_image_base64 = base64.b64encode(modified_image_data).decode('utf-8')
+                # 使用新的整合函式，直接傳入你想要的文字
+                final_image_data = process_image(image_data, overlay_text="Presented by Google")
                 
-                # 更新 API 回應中的圖像數據
+                # 轉回 base64
+                modified_image_base64 = base64.b64encode(final_image_data).decode('utf-8')
+                
+                # 更新回應
                 image_part["inlineData"]["data"] = modified_image_base64
-                image_part["inlineData"]["mimeType"] = "image/png" # 因為我們保存為 PNG
+                image_part["inlineData"]["mimeType"] = "image/png"
 
         # 將修改後的 Gemini API 回應回傳給前端
         return jsonify(api_response)
