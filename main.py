@@ -62,7 +62,7 @@ def process_image(image_data, overlay_text="Presented by Google"):
         # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
         # 這是你 CLI 找到的確切路徑
         font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-        font_size = int(image.width * 0.03) 
+        font_size = int(image.width * 0.06) 
         font_size = max(40, font_size) # 確保至少有 40px
         
         try:
@@ -144,7 +144,7 @@ def handle_generate():
                 image_data = base64.b64decode(image_part["inlineData"]["data"])
                 
                 # 使用新的整合函式，直接傳入你想要的文字
-                final_image_data = process_image(image_data, overlay_text="Presented by Google")
+                final_image_data = process_image(image_data, overlay_text="Made Possible By Google")
                 
                 # 轉回 base64
                 modified_image_base64 = base64.b64encode(final_image_data).decode('utf-8')
