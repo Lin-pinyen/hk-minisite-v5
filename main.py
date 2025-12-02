@@ -62,9 +62,8 @@ def process_image(image_data, overlay_text="Presented by Google"):
         # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
         # 這是你 CLI 找到的確切路徑
         font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-        font_size = int(image.width * 0.06) 
+        font_size = int(image.width * 0.1) 
         font_size = max(40, font_size) # 確保至少有 40px
-        
         try:
             font = ImageFont.truetype(font_path, font_size)
         except IOError:
@@ -80,7 +79,7 @@ def process_image(image_data, overlay_text="Presented by Google"):
         text_height = bbox[3] - bbox[1]
 
         # 計算文字位置 (右下角，留 15px 邊距)
-        margin = 15
+        margin = 20
         x = image.width - text_width - margin
         y = image.height - text_height - margin
 
