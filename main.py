@@ -34,7 +34,7 @@ def get_gemini_api_key():
 
 
 
-def process_image(image_data, overlay_text="Presented by Google"):
+def process_image(image_data, overlay_text="Made Possible By Google"):
     """
     整合圖片處理：添加底部 Banner 與 右下角文字。
     使用系統內建的 DejaVuSans-Bold 字體。
@@ -86,8 +86,8 @@ def process_image(image_data, overlay_text="Presented by Google"):
         # # (選用) 畫一個黑色陰影，讓白字在任何背景都清楚
         # draw.text((x+1, y+1), overlay_text, font=font, fill=(0, 0, 0)) 
         
-        # 畫上白色主文字
-        draw.text((x, y), overlay_text, font=font, fill=(255, 255, 255))
+        # 畫上白色主文字 with a black stroke
+        draw.text((x, y), overlay_text, font=font, fill=(255, 255, 255), stroke_width=2, stroke_fill=(0, 0, 0))
 
         # --- 步驟 C: 輸出結果 ---
         img_byte_arr = io.BytesIO()
