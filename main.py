@@ -62,8 +62,8 @@ def process_image(image_data, overlay_text="Made Possible By Google"):
         # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
         # 這是你 CLI 找到的確切路徑
         font_path = "./GoogleSans-Bold.ttf"
-        font_size = int(image.width * 0.05) 
-        font_size = max(80, font_size) # 確保至少有 40px
+        font_size = int(image.width * 0.03) 
+        font_size = max(20, font_size) # 確保至少有 40px
         try:
             font = ImageFont.truetype(font_path, font_size)
         except IOError:
