@@ -40,38 +40,55 @@ def process_image(image_data, overlay_text="Made Possible By Google"):
     使用系統內建的 DejaVuSans-Bold 字體。
     """
     try:
-        # 1. 一次性開啟圖片 (優化 I/O)
-        image = Image.open(io.BytesIO(image_data)).convert("RGBA")
+        # 1. 開啟原始圖片
+        original_image = Image.open(io.BytesIO(image_data)).convert("RGBA")
         base_path = os.path.dirname(os.path.abspath(__file__))
 
-        # --- 步驟 A: 貼上底部 Banner ---
+        # 設定預設的操作對象是原圖 (萬一沒找到 banner，就直接用原圖加字)
+        final_image = original_image 
+
+        # --- 步驟 A: 處理底部 Banner (擴展畫布模式) ---
         banner_path = os.path.join(base_path, "hk2025.jpeg")
+        
         if os.path.exists(banner_path):
             banner = Image.open(banner_path).convert("RGBA")
-            # 調整橫幅大小以匹配圖片寬度
-            banner_width = image.width
+            
+            # 1. 調整 Banner 寬度以匹配原圖
+            banner_width = original_image.width
             banner_height = int(banner.height * (banner_width / banner.width))
             banner = banner.resize((banner_width, banner_height))
             
-            # 計算橫幅位置 (底部)
-            banner_y = image.height - banner_height
-            image.paste(banner, (0, banner_y)) # 若 banner 沒有透明度，可省略 mask
+            # 2. 建立一張新的大畫布 (高度 = 原圖 + Banner)
+            total_height = original_image.height + banner_height
+            new_canvas = Image.new("RGBA", (original_image.width, total_height))
+            
+            # 3. 貼上原圖 (在上方)
+            new_canvas.paste(original_image, (0, 0))
+            
+            # 4. 貼上 Banner (在下方，接在原圖屁股後面)
+            new_canvas.paste(banner, (0, original_image.height))
+            
+            # 更新操作對象為這張變大的新圖
+            final_image = new_canvas
         else:
-            print("警告：找不到 hk2025.jpeg")
+            print("警告：找不到 hk2025.jpeg，將直接在原圖上操作")
 
-        # --- 步驟 B: 添加文字 (使用你找到的路徑) ---
-        # 這是你 CLI 找到的確切路徑
+        # --- 步驟 B: 添加文字 ---
+        # 注意：現在 final_image 包含了 Banner，所以文字會自動壓在最底部的 Banner 上
+        
         font_path = "./GoogleSans-Bold.ttf"
-        font_size = int(image.width * 0.015) 
-        font_size = max(15, font_size) # 確保至少有 40px
+        
+        # 字體大小設定 (維持你的設定)
+        font_size = int(final_image.width * 0.015) 
+        font_size = max(15, font_size)
+
         try:
             font = ImageFont.truetype(font_path, font_size)
         except IOError:
-            # 萬一 Cloud Functions 的正式環境真的沒有這個檔，會自動降級回預設字體
             print(f"警告：在路徑 {font_path} 找不到字體，將使用預設字體。")
             font = ImageFont.load_default()
 
-        draw = ImageDraw.Draw(image)
+        draw = ImageDraw.Draw(final_image)
         
         # 計算文字大小
         bbox = draw.textbbox((0, 0), overlay_text, font=font)
@@ -79,25 +96,23 @@ def process_image(image_data, overlay_text="Made Possible By Google"):
         text_height = bbox[3] - bbox[1]
 
         # 計算文字位置 (右下角，留 15px 邊距)
+        # 這裡的 final_image.height 已經是「原圖+Banner」的總高度了
         margin = 15
-        x = image.width - text_width - margin
-        y = image.height - text_height - margin
+        x = final_image.width - text_width - margin
+        y = final_image.height - text_height - margin
 
-        # # (選用) 畫一個黑色陰影，讓白字在任何背景都清楚
-        # draw.text((x+1, y+1), overlay_text, font=font, fill=(0, 0, 0)) 
-        
-        # 畫上白色主文字 with a black stroke
+        # 畫上白色主文字 with a black stroke (維持你的設定)
         draw.text((x, y), overlay_text, font=font, fill=(255, 255, 255), stroke_width=2, stroke_fill=(0, 0, 0))
 
         # --- 步驟 C: 輸出結果 ---
         img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
+        final_image.save(img_byte_arr, format='PNG')
         return img_byte_arr.getvalue()
 
     except Exception as e:
         print(f"圖片處理發生錯誤: {e}")
-        return image_data # 如果出錯，至少回傳原始圖片不要讓程式掛掉
-
+        return image_data
+    
 # --- 路由定義 ---
 
 @app.route('/')
