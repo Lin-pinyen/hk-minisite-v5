@@ -70,7 +70,6 @@
                     <button id="generate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400">
                         Generate Image
                     </button>
-                    <p class="text-xs text-gray-500 mt-2 text-left">If you encounter generation failure - it might due to high traffic, please try again later. <br>Please also ensure you follow our generation guidance <a href="https://policies.google.com/terms/generative-ai/use-policy?hl=en" class="text-indigo-600 hover:underline">here</a> to avoid failure.</p>
                 </div>
 
                 <!-- Right Column: Preview & Result -->
@@ -101,11 +100,6 @@
         </div>
         
         <!-- Disclaimer Footer -->
-        <footer class="mt-6 text-xs text-gray-500 text-left space-y-2">
-            <p><strong>Disclaimers:</strong> This demonstration site is intended for informational and illustrative purposes during this event only. All services are provided 'as-is' without warranties of any kind.</p>
-            <p>AI-generated content may contain inaccuracies, artifacts, or offensive material. Please review all outputs carefully. Please refrain from entering any personal, confidential, or sensitive proprietary information, as inputs may be logged.</p>
-            <p>Content generated from this site is for demonstration purposes only and is not licensed for commercial or public use. We assume no liability for any decisions or actions taken based on the content generated.</p>
-        </footer>
     </div>
 
     <script>
@@ -334,8 +328,7 @@
                     desktopDownloadTip.classList.add('md:block');
                     // 'hidden' class for mobile stays, so result is 'hidden md:block'
 
-                    let caption = textPart ? textPart.text : "Visionary thoughts loading...";
-                    showMessage(`Image generated successfully! Caption: ${caption}`);
+                    showMessage(`Image generated successfully!`);
                 } else {
                     let detailedError = "No image data found in the API response.";
                     if (result?.candidates?.[0]?.finishReason === 'SAFETY') {
